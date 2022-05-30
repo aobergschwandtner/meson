@@ -3141,6 +3141,15 @@ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47485'''))
                             for t in target.link_depends])
         elem = NinjaBuildElement(self.all_outputs, outname, linker_rule, obj_list, implicit_outs=implicit_outs)
         elem.add_dep(dep_targets + custom_target_libraries)
+
+        # The TI C2000 linker generates different outputs depending on the compile arguments.
+        # Therefore we need to get the compiler arguments for the linker
+        if linker.id == 'c2000':
+            compiler = get_compiler_for_source(target.compilers.values(), 'x.c')
+            cc_commands = self.generate_basic_compiler_args(target, compiler, False)
+            cc_commands = cc_commands.compiler.compiler_args(cc_commands)
+            elem.add_item('ARGS', cc_commands)
+
         elem.add_item('LINK_ARGS', commands)
         return elem
 
